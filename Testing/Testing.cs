@@ -67,32 +67,35 @@ public class ArtistTests
     }
 
     [Fact]
-public async Task UpdateArtist_ShouldUpdateSuccessfully()
-{
-    var db = GetDbContext();
-    var repo = new ArtistRepository(db);
+    public async Task UpdateArtist_ShouldUpdateSuccessfully()
+    {
+        // Arrange
+        var db = GetDbContext();
+        var repo = new ArtistRepository(db);
 
-    var artist = new Artist { Name = "Original", Age = 30, Country = "USA", Label = "Label1" };
-    db.Artists.Add(artist);
-    await db.SaveChangesAsync();
+        var artist = new Artist { Name = "Original", Age = 30, Country = "USA", Label = "Label1" };
+        db.Artists.Add(artist);
+        await db.SaveChangesAsync();
 
-    artist.Name = "Updated";
-    artist.Age = 35;
+        artist.Name = "Updated";
+        artist.Age = 35;
 
-    await repo.UpdateAsync(artist);
+        // Act
+        await repo.UpdateAsync(artist);
+        var updated = await repo.GetByIdAsync(artist.Id);
 
-    var updated = await repo.GetByIdAsync(artist.Id);
-
-    Assert.NotNull(updated);
-    Assert.Equal("Updated", updated!.Name);
-    Assert.NotEqual("Original", updated.Name); 
-    Assert.True(updated.Age > 30); 
-}
+        // Assert
+        Assert.NotNull(updated);
+        Assert.Equal("Updated", updated!.Name);
+        Assert.NotEqual("Original", updated.Name); 
+        Assert.True(updated.Age > 30); 
+    }
 
 
     [Fact]
     public async Task DeleteArtist_ShouldRemove()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new ArtistRepository(db);
 
@@ -100,13 +103,17 @@ public async Task UpdateArtist_ShouldUpdateSuccessfully()
         db.Artists.Add(artist);
         await db.SaveChangesAsync();
 
+        // Act
         await repo.DeleteAsync(artist.Id);
 
+        // Assert
         Assert.Empty(db.Artists);
     }
+
      [Fact]
     public void CreateArtist_InvalidDto_ShouldFailValidation()
     {
+        // Arrange
         var dto = new DTOs.ArtistDto
         {
             Name = "",
@@ -115,8 +122,10 @@ public async Task UpdateArtist_ShouldUpdateSuccessfully()
             Label = "A very long label name that exceeds the maximum length allowed for this field in the validation rules"
         };
 
+        // Act
         var result = _validator.Validate(dto);
 
+        // Assert
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "Name");
         Assert.Contains(result.Errors, e => e.PropertyName == "Age");
@@ -127,17 +136,21 @@ public async Task UpdateArtist_ShouldUpdateSuccessfully()
     [Fact]
     public async Task GetArtist_NonExistingId_ShouldReturnNull()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new ArtistRepository(db);
 
+        // Act
         var result = await repo.GetByIdAsync(999);
 
+        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task UpdateArtist_NonExisting_ShouldThrowKeyNotFoundException()
     {
+        // Arrange  
         var db = GetDbContext();
         var repo = new ArtistRepository(db);
         var artist = new Artist { Id = 999, Name = "Ghost" };
@@ -149,6 +162,7 @@ public async Task UpdateArtist_ShouldUpdateSuccessfully()
     [Fact]
     public async Task DeleteArtist_NonExisting_ShouldThrowKeyNotFoundException()
     {
+        // Arrange  
         var db = GetDbContext();
         var repo = new ArtistRepository(db);
 
@@ -157,33 +171,39 @@ public async Task UpdateArtist_ShouldUpdateSuccessfully()
     }
 
     [Fact]
-public async Task GetAllArtists_ShouldReturnList()
-{
-    var db = GetDbContext();
-    db.Artists.AddRange(
-        new Artist { Name = "A1", Age = 20, Country = "USA", Label = "L1" },
-        new Artist { Name = "A2", Age = 30, Country = "UK", Label = "L2" }
-    );
-    await db.SaveChangesAsync();
+    public async Task GetAllArtists_ShouldReturnList()
+    {
+        // Arrange
+        var db = GetDbContext();
+        db.Artists.AddRange(
+            new Artist { Name = "A1", Age = 20, Country = "USA", Label = "L1" },
+         new Artist { Name = "A2", Age = 30, Country = "UK", Label = "L2" }
+        );
+        await db.SaveChangesAsync();
 
-    var repo = new ArtistRepository(db);
+        var repo = new ArtistRepository(db);
 
-    var result = await repo.GetAllAsync();
+        // Act
+        var result = await repo.GetAllAsync();
 
-    Assert.NotNull(result);
-    Assert.Equal(2, result.Count);
-}
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+    }
 
-[Fact]
-public async Task GetAllArtists_Empty_ShouldReturnEmptyList()
-{
-    var db = GetDbContext();
-    var repo = new ArtistRepository(db);
+    [Fact]
+    public async Task GetAllArtists_Empty_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var db = GetDbContext();
+        var repo = new ArtistRepository(db);
 
-    var result = await repo.GetAllAsync();
+        // Act
+        var result = await repo.GetAllAsync();
 
-    Assert.Empty(result);
-}
+        // Assert
+        Assert.Empty(result);
+    }
 }
 
 public class AlbumTests
@@ -202,6 +222,7 @@ public class AlbumTests
     [Fact]
     public async Task CreateAlbum_ShouldAddAlbum()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new AlbumRepository(db);
 
@@ -215,8 +236,10 @@ public class AlbumTests
             ArtistId = 1
         };
 
+        // Act
         var result = await repo.CreateAsync(album);
 
+        // Assert
         Assert.Equal("Test Album", result.Title);
         Assert.Single(db.Albums);
     }
@@ -224,6 +247,7 @@ public class AlbumTests
     [Fact]
     public async Task GetAlbum_ShouldReturnAlbum()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new AlbumRepository(db);
 
@@ -240,8 +264,10 @@ public class AlbumTests
         db.Albums.Add(album);
         await db.SaveChangesAsync();
 
+        // Act
         var result = await repo.GetByIdAsync(album.Id);
 
+        // Assert
         Assert.NotNull(result);
         Assert.Equal("AAA", result!.Title);
         Assert.NotNull(result.Artist);
@@ -251,6 +277,7 @@ public class AlbumTests
     [Fact]
     public async Task UpdateAlbum_ShouldModify()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new AlbumRepository(db);
 
@@ -259,14 +286,18 @@ public class AlbumTests
         await db.SaveChangesAsync();
 
         album.Title = "New";
+        
+        // Act
         await repo.UpdateAsync(album);
 
+        // Assert
         Assert.Equal("New", db.Albums.First().Title);
     }
 
     [Fact]
     public async Task DeleteAlbum_ShouldRemove()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new AlbumRepository(db);
 
@@ -274,14 +305,17 @@ public class AlbumTests
         db.Albums.Add(album);
         await db.SaveChangesAsync();
 
+        // Act
         await repo.DeleteAsync(album.Id);
 
+        // Assert
         Assert.Empty(db.Albums);
     }
 
     [Fact]
     public void CreateAlbum_InvalidDto_ShouldFailValidation()
     {
+        // Arrange
         var dto = new DTOs.AlbumDto
         {
             Title = "",
@@ -290,8 +324,10 @@ public class AlbumTests
             SongCount = 0
         };
 
+        // Act
         var result = _validator.Validate(dto);
 
+        // Assert
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "Title");
         Assert.Contains(result.Errors, e => e.PropertyName == "Length");
@@ -302,30 +338,37 @@ public class AlbumTests
      [Fact]
     public async Task UpdateAlbum_NonExisting_ShouldThrowKeyNotFoundException()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new AlbumRepository(db);
         var album = new Album { Id = 999, Title = "Ghost", ArtistId = 1 };
 
+        // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.UpdateAsync(album));
     }
 
     [Fact]
     public async Task GetAlbum_NonExistingId_ShouldReturnNull()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new AlbumRepository(db);
 
+        // Act
         var result = await repo.GetByIdAsync(999);
 
+        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task DeleteAlbum_NonExisting_ShouldThrowKeyNotFoundException()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new AlbumRepository(db);
 
+        // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.DeleteAsync(999));
     }
 
@@ -335,12 +378,10 @@ public class AlbumTests
         // Arrange
         var db = GetDbContext();
 
-        // Створюємо артиста
         var artist = new Artist { Name = "Artist1", Age = 30, Country = "USA", Label = "Label1" };
         db.Artists.Add(artist);
         await db.SaveChangesAsync();
 
-        // Створюємо альбоми та прив'язуємо ArtistId
         db.Albums.AddRange(
             new Album { Title = "Alb1", Year = 2000, Length = 45, SongCount = 10, ArtistId = artist.Id },
             new Album { Title = "Alb2", Year = 2010, Length = 50, SongCount = 12, ArtistId = artist.Id }
@@ -358,16 +399,19 @@ public class AlbumTests
     
     }
 
-[Fact]
-public async Task GetAllAlbums_Empty_ShouldReturnEmptyList()
-{
-    var db = GetDbContext();
-    var repo = new AlbumRepository(db);
+    [Fact]
+    public async Task GetAllAlbums_Empty_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var db = GetDbContext();
+        var repo = new AlbumRepository(db);
 
-    var result = await repo.GetAllAsync();
+        // Act
+        var result = await repo.GetAllAsync();
 
-    Assert.Empty(result);
-}
+        // Assert
+        Assert.Empty(result);
+    }
 }
 
 public class TrackTests
@@ -398,41 +442,39 @@ public class TrackTests
     }
 
     [Fact]
-public async Task CreateTrack_ShouldCallRepository_WhenAlbumNotFull()
-{
-    // Arrange
-    var mockRepo = new Mock<ITrackRepository>();
-
-    // Альбом ще не переповнений, тому CreateAsync має спрацювати
-    var trackToAdd = new Track
+    public async Task CreateTrack_ShouldCallRepository_WhenAlbumNotFull()
     {
-        Title = "New Track",
-        DurationSeconds = 180,
-        AlbumId = 1
-    };
+        // Arrange
+        var mockRepo = new Mock<ITrackRepository>();
 
-    mockRepo.Setup(r => r.CreateAsync(It.Is<Track>(t => t.AlbumId == 1 && t.Title == "New Track")))
-            .ReturnsAsync((Track t) => t)
-            .Verifiable();
+        var trackToAdd = new Track
+        {
+            Title = "New Track",
+            DurationSeconds = 180,
+            AlbumId = 1
+        };
 
-    var repo = mockRepo.Object;
+        mockRepo.Setup(r => r.CreateAsync(It.Is<Track>(t => t.AlbumId == 1 && t.Title == "New Track")))
+                .ReturnsAsync((Track t) => t)
+                .Verifiable();
 
-    // Act
-    var result = await repo.CreateAsync(trackToAdd);
+        var repo = mockRepo.Object;
 
-    // Assert
-    Assert.NotNull(result);
-    Assert.Equal("New Track", result.Title);
-    Assert.Equal(180, result.DurationSeconds);
+        // Act
+        var result = await repo.CreateAsync(trackToAdd);
 
-    // Перевіряємо, що метод CreateAsync викликався саме один раз
-    mockRepo.Verify(r => r.CreateAsync(It.IsAny<Track>()), Times.Once);
-    mockRepo.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
-}
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("New Track", result.Title);
+        Assert.Equal(180, result.DurationSeconds);
+        mockRepo.Verify(r => r.CreateAsync(It.IsAny<Track>()), Times.Once);
+        mockRepo.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
+    }
 
     [Fact]
     public async Task UpdateTrack_ShouldCallRepository()
     {
+        // Arrange
         var track = new Track { Id = 3, Title = "Old" };
 
         var mock = new Mock<ITrackRepository>();
@@ -442,22 +484,27 @@ public async Task CreateTrack_ShouldCallRepository_WhenAlbumNotFull()
 
         var repo = mock.Object;
 
+        // Act
         await repo.UpdateAsync(track);
 
+        // Assert
         mock.Verify(r => r.UpdateAsync(track), Times.Once);
     }
 
     [Fact]
     public async Task DeleteTrack_ShouldCallRepositoryOnce()
     {
+        // Arrange
         var mockRepo = new Mock<ITrackRepository>();
 
         mockRepo
             .Setup(r => r.DeleteAsync(5))
             .Returns(Task.CompletedTask);
 
+        // Act
         await mockRepo.Object.DeleteAsync(5);
 
+        // Assert   
         mockRepo.Verify(r => r.DeleteAsync(5), Times.Once);
     }
 
@@ -467,13 +514,12 @@ public async Task CreateTrack_ShouldCallRepository_WhenAlbumNotFull()
         // Arrange
         var mockRepo = new Mock<ITrackRepository>();
 
-        // Кидаємо виняток при створенні некоректного треку
         mockRepo.Setup(r => r.CreateAsync(It.Is<Track>(t => string.IsNullOrEmpty(t.Title) || t.DurationSeconds <= 0)))
                 .ThrowsAsync(new ArgumentException("Invalid track"));
 
         var invalidTrack = new Track { Title = "", DurationSeconds = -10, AlbumId = 1 };
 
-        // Act + Assert
+        // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => mockRepo.Object.CreateAsync(invalidTrack));
     }
 
@@ -488,7 +534,7 @@ public async Task CreateTrack_ShouldCallRepository_WhenAlbumNotFull()
 
         var track = new Track { Title = "ValidTrack", DurationSeconds = 180, AlbumId = 999 };
 
-        // Act + Assert
+        // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => mockRepo.Object.CreateAsync(track));
     }
 
@@ -503,33 +549,39 @@ public async Task CreateTrack_ShouldCallRepository_WhenAlbumNotFull()
 
         var track = new Track { Title = "ExtraTrack", DurationSeconds = 200, AlbumId = 1 };
 
-        // Act + Assert
+        // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => mockRepo.Object.CreateAsync(track));
     }
 
     [Fact]
     public async Task GetTrack_NotExisting_ShouldReturnNull()
     {
+        // Arrange
         var mock = new Mock<ITrackRepository>();
         mock.Setup(r => r.GetByIdAsync(It.IsAny<int>()))
             .ReturnsAsync((Track?)null);
 
         var repo = mock.Object;
 
+        // Act
         var result = await repo.GetByIdAsync(999);
 
+        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task UpdateTrack_NotExisting_ShouldThrow()
     {
+        // Arrange
         var mock = new Mock<ITrackRepository>();
         mock.Setup(r => r.UpdateAsync(It.IsAny<Track>()))
             .ThrowsAsync(new KeyNotFoundException("Not found"));
 
+        // Act
         var repo = mock.Object;
 
+        // Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             repo.UpdateAsync(new Track { Id = 999, Title = "X" }));
     }
@@ -537,48 +589,55 @@ public async Task CreateTrack_ShouldCallRepository_WhenAlbumNotFull()
     [Fact]
     public async Task DeleteTrack_NotExisting_ShouldThrow()
     {
+        // Arrange
         var mock = new Mock<ITrackRepository>();
         mock.Setup(r => r.DeleteAsync(It.IsAny<int>()))
             .ThrowsAsync(new KeyNotFoundException("Track not found"));
 
+        // Act
         var repo = mock.Object;
 
+        // Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             repo.DeleteAsync(999));
     }
 
-[Fact]
-public async Task GetAllTracks_ShouldReturnList()
-{
-    var mock = new Mock<ITrackRepository>();
-    mock.Setup(r => r.GetAllAsync())
-        .ReturnsAsync(new List<Track>
-        {
-            new Track { Id = 1, Title = "T1" },
-            new Track { Id = 2, Title = "T2" }
-        });
+    [Fact]
+    public async Task GetAllTracks_ShouldReturnList()
+    {
+        // Arrange
+        var mock = new Mock<ITrackRepository>();
+        mock.Setup(r => r.GetAllAsync())
+            .ReturnsAsync(new List<Track>
+            {
+                new Track { Id = 1, Title = "T1" },
+                new Track { Id = 2, Title = "T2" }
+            });
 
-    var repo = mock.Object;
+        // Act
+        var repo = mock.Object;
+        var result = await repo.GetAllAsync();
 
-    var result = await repo.GetAllAsync();
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+    }
 
-    Assert.NotNull(result);
-    Assert.Equal(2, result.Count);
-}
+    [Fact]
+    public async Task GetAllTracks_Empty_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var mock = new Mock<ITrackRepository>();
+        mock.Setup(r => r.GetAllAsync())
+            .ReturnsAsync(new List<Track>());
 
-[Fact]
-public async Task GetAllTracks_Empty_ShouldReturnEmptyList()
-{
-    var mock = new Mock<ITrackRepository>();
-    mock.Setup(r => r.GetAllAsync())
-        .ReturnsAsync(new List<Track>());
+        // Act
+        var repo = mock.Object;
+        var result = await repo.GetAllAsync();
 
-    var repo = mock.Object;
-
-    var result = await repo.GetAllAsync();
-
-    Assert.Empty(result);
-}
+        // Assert
+        Assert.Empty(result);
+    }
 }
 
 
@@ -598,6 +657,7 @@ public class PlaylistTests
     [Fact]
     public async Task CreatePlaylist_ShouldAdd()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new PlaylistRepository(db);
 
@@ -607,8 +667,10 @@ public class PlaylistTests
             Description = "Test"
         };
 
+        // Act
         var result = await repo.CreateAsync(playlist);
 
+        // Assert
         Assert.Equal("MyPlaylist", result.Name);
         Assert.Single(db.Playlists);
     }
@@ -616,6 +678,7 @@ public class PlaylistTests
     [Fact]
     public async Task GetPlaylist_ShouldReturn()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new PlaylistRepository(db);
 
@@ -623,8 +686,10 @@ public class PlaylistTests
         db.Playlists.Add(playlist);
         await db.SaveChangesAsync();
 
+        // Act
         var result = await repo.GetByIdAsync(playlist.Id);
 
+        // Assert
         Assert.NotNull(result);
         Assert.Equal("AAA", result!.Name);
     }
@@ -632,6 +697,7 @@ public class PlaylistTests
     [Fact]
     public async Task UpdatePlaylist_ShouldModify()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new PlaylistRepository(db);
 
@@ -639,15 +705,18 @@ public class PlaylistTests
         db.Playlists.Add(playlist);
         await db.SaveChangesAsync();
 
+        // Act
         playlist.Name = "New";
         await repo.UpdateAsync(playlist);
 
+        // Assert
         Assert.Equal("New", db.Playlists.First().Name);
     }
 
     [Fact]
     public async Task DeletePlaylist_ShouldRemove()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new PlaylistRepository(db);
 
@@ -655,22 +724,27 @@ public class PlaylistTests
         db.Playlists.Add(playlist);
         await db.SaveChangesAsync();
 
+        // Act
         await repo.DeleteAsync(playlist.Id);
 
+        // Assert
         Assert.Empty(db.Playlists);
     }
 
     [Fact]
     public void CreatePlaylist_InvalidDto_ShouldFailValidation()
     {
+        // Arrange
         var dto = new DTOs.PlaylistDto
         {
             Name = "",
             Description = ""
         };
 
+        // Act
         var result = _validator.Validate(dto);
 
+        // Assert
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "Name");
     }
@@ -678,60 +752,72 @@ public class PlaylistTests
     [Fact]
     public async Task UpdatePlaylist_NonExisting_ShouldThrowKeyNotFoundException()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new PlaylistRepository(db);
         var playlist = new Playlist { Id = 999, Name = "Ghost" };
 
+        // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.UpdateAsync(playlist));
     }
 
     [Fact]
     public async Task GetPlaylist_NonExistingId_ShouldReturnNull()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new PlaylistRepository(db);
 
+        // Act
         var result = await repo.GetByIdAsync(999);
 
+        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public async Task DeletePlaylist_NonExisting_ShouldThrowKeyNotFoundException()
     {
+        // Arrange
         var db = GetDbContext();
         var repo = new PlaylistRepository(db);
 
+        // Act & Assert
         await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.DeleteAsync(999));
     }
 
     [Fact]
-public async Task GetAllPlaylists_ShouldReturnList()
-{
-    var db = GetDbContext();
+    public async Task GetAllPlaylists_ShouldReturnList()
+    {
+        // Arrange
+        var db = GetDbContext();
 
-    db.Playlists.AddRange(
-        new Playlist { Name = "P1" },
-        new Playlist { Name = "P2" }
-    );
-    await db.SaveChangesAsync();
+        db.Playlists.AddRange(
+            new Playlist { Name = "P1" },
+            new Playlist { Name = "P2" }
+        );
+        await db.SaveChangesAsync();
 
-    var repo = new PlaylistRepository(db);
+        // Act
+        var repo = new PlaylistRepository(db);
+        var result = await repo.GetAllAsync();
 
-    var result = await repo.GetAllAsync();
-
-    Assert.NotNull(result);
-    Assert.Equal(2, result.Count);
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
 }
 
-[Fact]
-public async Task GetAllPlaylists_Empty_ShouldReturnEmptyList()
-{
-    var db = GetDbContext();
-    var repo = new PlaylistRepository(db);
+    [Fact]
+    public async Task GetAllPlaylists_Empty_ShouldReturnEmptyList()
+    {
+        // Arrange
+        var db = GetDbContext();
+        var repo = new PlaylistRepository(db);
 
-    var result = await repo.GetAllAsync();
+        // Act
+        var result = await repo.GetAllAsync();
 
-    Assert.Empty(result);
-}
+        // Assert
+        Assert.Empty(result);
+    }
 }
